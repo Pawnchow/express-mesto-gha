@@ -22,4 +22,8 @@ app.use('/', cardsRouter);
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 });
+app.use((err, req, res, next) => {
+  res.status(err.statusCode).send({ message: err.statusCode === 500 ? '«На сервере произошла ошибка' : err.message });
+  next();
+});
 app.listen(PORT);
