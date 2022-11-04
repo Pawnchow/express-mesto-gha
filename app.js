@@ -23,7 +23,12 @@ app.use('*', (req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 });
 app.use((err, req, res, next) => {
-  res.status(err.statusCode).send({ message: err.statusCode === 500 ? '«На сервере произошла ошибка' : err.message });
+  const e = err;
+  if (!e.statusCode) {
+    e.statusCode = 500;
+    e.message = 'На сервере произошла ошибка';
+  }
+  res.status(e.statusCode).send({ message: e.message });
   next();
 });
 app.listen(PORT);
