@@ -29,12 +29,13 @@ app.post('/signup', celebrate({
     password: Joi.string().min(8).required(),
   }),
 }), createUser);
-app.use('*', (req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
-});
+
 app.use(auth);
 app.use('/', userRouter);
 app.use('/', cardsRouter);
+app.use('*', (req, res) => {
+  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
+});
 app.use(errors());
 app.use((err, req, res, next) => {
   const e = err;
@@ -45,4 +46,5 @@ app.use((err, req, res, next) => {
   res.status(e.statusCode).send({ message: e.message });
   next();
 });
+
 app.listen(PORT);
