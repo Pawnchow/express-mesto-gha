@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 const getCards = (req, res, next) => {
   Card.find({})
@@ -25,6 +26,8 @@ const deleteCardById = (req, res, next) => {
     .then((card) => {
       if (!card) {
         next(new NotFoundError('Карточка с указанным _id не найдена.'));
+      } else if (card.owner._id.toString() !== req.user._id) {
+        next(new ForbiddenError('Нет прав на удаление карточки'));
       } else {
         res.send({ data: card });
       }
@@ -49,9 +52,7 @@ const likeCard = (req, res, next) => {
     .catch((err) => {
       if (err.message === 'NotFound') {
         next(new NotFoundError('Передан несуществующий _id карточки'));
-        return;
-      }
-      if (err.name === 'CastError') {
+      } else if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
       } else next(err);
     });
@@ -70,9 +71,7 @@ const dislikeCard = (req, res, next) => {
     .catch((err) => {
       if (err.message === 'NotFound') {
         next(new NotFoundError('Передан несуществующий _id карточки'));
-        return;
-      }
-      if (err.name === 'CastError') {
+      } else if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные для снятия лайка'));
       } else next(err);
     });
