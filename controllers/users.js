@@ -5,6 +5,7 @@ const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
+const AuthError = require('../errors/AuthError');
 
 const getUsers = (req, res, next) => {
   User.find({})
@@ -112,9 +113,11 @@ const login = (req, res, next) => {
         maxAge: 3600000 * 7 * 24,
         httpOnly: true,
       })
-        .end();
+        .send({ token });
     })
-    .catch(next);
+    .catch(() => {
+      next(new AuthError('Неправильные email или пароль'));
+    });
 };
 
 const getCurrentUser = (req, res, next) => {

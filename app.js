@@ -19,12 +19,11 @@ mongoose.connect(MONGO_URL);
 const app = express();
 app.use(express.json());
 app.use(helmet());
-
+app.use('/users', auth, userRouter);
+app.use('/cards', auth, cardsRouter);
 app.post('/signin', signInValid, login);
 app.post('/signup', signUpValid, createUser);
 
-app.use('/users', auth, userRouter);
-app.use('/cards', auth, cardsRouter);
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 });
