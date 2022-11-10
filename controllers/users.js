@@ -29,14 +29,34 @@ const getUserById = (req, res, next) => {
 
 const createUser = (req, res, next) => {
   const {
-    name, about, avatar, email, password,
+    name,
+    about,
+    avatar,
+    email,
+    password,
   } = req.body;
   bcrypt.hash(password, 10)
     .then((hashedPass) => {
       User.create({
-        name, about, avatar, email, password: hashedPass,
+        name,
+        about,
+        avatar,
+        email,
+        password: hashedPass,
       })
-        .then((user) => res.send({ data: user }))
+        .then((user) => {
+          res
+            .status(201)
+            .send({
+              data: {
+                name,
+                about,
+                email,
+                avatar,
+                _id: user._id,
+              },
+            });
+        })
         .catch((err) => {
           if (err.name === 'ValidationError') {
             next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
@@ -87,12 +107,12 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
   User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expires: '7d' });
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
       res.cookie('jwt', token, {
         maxAge: 3600000 * 7 * 24,
         httpOnly: true,
       })
-        .send('Токен сохранён в куках');
+        .end();
     })
     .catch(next);
 };
