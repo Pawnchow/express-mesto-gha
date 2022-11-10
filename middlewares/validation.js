@@ -45,7 +45,7 @@ const cardIdValid = celebrate({
 
 const createCardValid = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
+    name: Joi.string().min(2).max(30).required(),
     link: Joi.string().required().pattern(avatarUrlRegEx),
   }),
 });
