@@ -1,10 +1,12 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
 const userRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
-const { login, createUser } = require('./controllers/users');
+const NotFoundError = require('./errors/NotFoundError');
+const { login, createUser, logout } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 
 const {
@@ -19,13 +21,17 @@ mongoose.connect(MONGO_URL);
 const app = express();
 app.use(express.json());
 app.use(helmet());
-app.use('/users', auth, userRouter);
-app.use('/cards', auth, cardsRouter);
+app.use(cookieParser());
+
 app.post('/signin', signInValid, login);
 app.post('/signup', signUpValid, createUser);
+app.get('/signout', logout);
+app.use(auth);
+app.use('/users', userRouter);
+app.use('/cards', cardsRouter);
 
-app.use('*', (req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемый ресурс не найден'));
 });
 app.use(errors());
 app.use((err, req, res, next) => {

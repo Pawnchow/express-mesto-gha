@@ -4,7 +4,7 @@ const { avatarUrlRegEx } = require('../utils/utils');
 const signInValid = celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    password: Joi.string().min(8).required(),
+    password: Joi.string().required(),
   }),
 });
 
@@ -14,7 +14,7 @@ const signUpValid = celebrate({
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().pattern(avatarUrlRegEx),
     email: Joi.string().required().email(),
-    password: Joi.string().min(8).required(),
+    password: Joi.string().required(),
   }),
 });
 

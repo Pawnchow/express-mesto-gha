@@ -17,12 +17,10 @@ const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
   User.findById(userId)
-    .orFail(() => { throw new Error('NotFound'); })
+    .orFail(() => new NotFoundError('Пользователь по указанному _id не найден'))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.message === 'NotFound') {
-        next(new NotFoundError('Пользователь по указанному _id не найден'));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные при поиске пользователя'));
       } else next(err);
     });
@@ -65,7 +63,8 @@ const createUser = (req, res, next) => {
             next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
           } else next(err);
         });
-    });
+    })
+    .catch(next);
 };
 
 const updateUser = (req, res, next) => {
@@ -75,12 +74,10 @@ const updateUser = (req, res, next) => {
     { name, about },
     { new: true, runValidators: true },
   )
-    .orFail(() => { throw new Error('NotFound'); })
+    .orFail(() => new NotFoundError('Пользователь с указанным _id не найден'))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.message === 'NotFound') {
-        next(new NotFoundError('Пользователь с указанным _id не найден'));
-      } else if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
       } else next(err);
     });
@@ -93,12 +90,10 @@ const updateAvatar = (req, res, next) => {
     { avatar },
     { new: true, runValidators: true },
   )
-    .orFail(() => { throw new Error('NotFound'); })
+    .orFail(() => new NotFoundError('Пользователь с указанным _id не найден'))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.message === 'NotFound') {
-        next(new NotFoundError('Пользователь с указанным _id не найден'));
-      } else if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные при обновлении аватара'));
       } else next(err);
     });
@@ -120,15 +115,15 @@ const login = (req, res, next) => {
     });
 };
 
+const logout = (req, res) => {
+  res.clearCookie('jwt').send({ message: 'Выход' });
+};
+
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail(() => { throw new Error('NotFound'); })
+    .orFail(() => new NotFoundError('Пользователь не найден'))
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.message === 'NotFound') {
-        next(new NotFoundError('Пользователь не найден'));
-      } else next(err);
-    });
+    .catch(next);
 };
 
 module.exports = {
@@ -138,5 +133,6 @@ module.exports = {
   updateAvatar,
   updateUser,
   login,
+  logout,
   getCurrentUser,
 };
